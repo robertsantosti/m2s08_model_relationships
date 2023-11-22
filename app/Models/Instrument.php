@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Instrument extends Model
 {
@@ -12,12 +13,12 @@ class Instrument extends Model
     protected $fillable = ['name', 'description'];
 
     /**
-     * Get the user that owns the Instrument
+     * Get all of the artists for the Instrument
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function artist(): BelongsTo
+    public function artists(): HasMany
     {
-        return $this->belongsTo(Artist::class, 'favorite_instrument_id');
+        return $this->hasMany(Artist::class, 'favorite_istrument_id', 'id');
     }
 }

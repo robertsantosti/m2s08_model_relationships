@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Artist extends Model
 {
@@ -18,12 +19,13 @@ class Artist extends Model
     ];
 
     /**
-     * Get the user associated with the Artist
+     * Get the instrument that owns the Artist
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function instrument(): HasOne
+    public function instrument(): BelongsTo
     {
-        return $this->hasOne(Instrument::class, 'id', 'favorite_instrument_id');
+        return $this->belongsTo(Instrument::class, 'favorite_instrument_id', 'id');
     }
+
 }
