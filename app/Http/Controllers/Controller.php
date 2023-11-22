@@ -20,7 +20,7 @@ class Controller extends BaseController
             "data"=> $data,
         ];
 
-        return response()->statusCode($statusCode)->json($data);
+        return response()->json($data, $statusCode);
     }
 
     public function error($message, $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR)
