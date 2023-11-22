@@ -14,16 +14,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table($this->table, function (Blueprint $table) {
-            $table->unsignedBigInterger($column)->nullable()->after('is_singer');
-            $table->foreign($column)->references('id')->on($targetTable);
+            $table->unsignedBigInteger($this->column)->nullable()->after('is_singer');
+            $table->foreign($this->column)->references('id')->on($this->targetTable);
         });
     }
 
     public function down(): void
     {
         Schema::table($this->table, function (Blueprint $table) {
-            $table->dropForeign($foreign);
-            $table->dropColumn($column);
+            $table->dropForeign($this->foreign);
+            $table->dropColumn($this->column);
         });
     }
 };
