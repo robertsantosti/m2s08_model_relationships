@@ -36,32 +36,18 @@ class ArtistsController extends Controller
             ];
 
             $request->validate($validator);
+            
+            $artist = $this->setArtist((object) $request->all());
 
-            $payloadArtist = [
-                'name' => $request->input('name'),
-                'birthdate' => Carbon::parse($request->input('birthdate')),
-                'bio' => $request->input('bio'),
-                'is_singer'=> empty($request->input('is_singer')) ? false : $request->input('is_singer'),
-            ];
-
-            $artist = ArtistModel::create($payloadArtist);
-
-            foreach($request->input('genders') as $name)
+            if(!empty($request->input('genders')))
             {
-                $gender = GenderModel::firstOrCreate(['name' => $name]);
-                ArtistGenderModel::firstOrCreate(
-                    [
-                        'artist_id' => $artist->id,
-                        'gender_id'=> $gender->id
-                    ]
-                );
+                $this->setGenders($request->input('genders'), $artist);
             }
+
 
             if(!empty($request->input('favorite_instrument')))
             {
-                $instrument = InstrumentModel::firstOrCreate(['name'=> $request->input('favorite_instrument')]);
-                $artist->favorite_instrument_id = $instrument->id;
-                $artist->save();
+                $this->setInstrument($request->input('favorite_instrument'), $artist);
             }
 
             return $this->response($artist, "Artista $artist->name cadatrado com sucesso.");
@@ -86,7 +72,7 @@ class ArtistsController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-        
+            
         } catch (\Exception $e) {
             return $this->error($e->getMessage());
         }
@@ -95,9 +81,46 @@ class ArtistsController extends Controller
     public function destroy(string $id)
     {
         try {
-        
+            $artist = ArtistModel::find($id);
+            $artist->instrument->delete(); 
+
+            $artist->delete();
         } catch (\Exception $e) {
             return $this->error($e->getMessage());
         }
+    }
+
+    private function setArtist($data)
+    {
+        $payloadArtist = [
+            'name' => $data->name,
+            'birthdate' => Carbon::parse($data->birthdate),
+            'bio' => $data->bio,
+            'is_singer'=> empty($data->is_singer) ? false : $data->is_singer,
+        ];
+
+        return ArtistModel::create($payloadArtist); 
+    }
+
+    private function setGenders($genders, ArtistModel $artist)
+    {
+        foreach($genders as $name)
+        {
+            $gender = GenderModel::firstOrCreate(['name' => $name]);
+
+            ArtistGenderModel::firstOrCreate(
+                [
+                    'artist_id' => $artist->id,
+                    'gender_id'=> $gender->id
+                ]
+            );
+        }
+    }
+
+    private function setInstrument($name, ArtistModel $artist)
+    {
+        $instrument = InstrumentModel::firstOrCreate(['name'=> $name]);
+        $artist->favorite_instrument_id = $instrument->id;
+        $artist->save();
     }
 }
