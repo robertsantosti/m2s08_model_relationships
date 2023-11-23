@@ -3,17 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Artist as ArtistModel;
+use App\Models\ArtistGender as ArtistGenderModel;
 use App\Models\Gender as GenderModel;
 use App\Models\Instrument as InstrumentModel;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class ArtistsController extends Controller
 {
     public function index()
     {
         try {
-            $artists = ArtistModel::all();
+            $artists = ArtistModel::with(['instrument'])->get();
             $message = $artists->count()." ".($artists->count() === 1 ? 'artista encontrado' : 'artistas encontrados')." com sucesso.";
             return $this->response($artists, $message);
         } catch (\Exception $e) {
@@ -39,7 +41,7 @@ class ArtistsController extends Controller
                 'name' => $request->input('name'),
                 'birthdate' => Carbon::parse($request->input('birthdate')),
                 'bio' => $request->input('bio'),
-                'is_singer'=> $request->input('is_singer'),
+                'is_singer'=> empty($request->input('is_singer')) ? false : $request->input('is_singer'),
             ];
 
             $artist = ArtistModel::create($payloadArtist);
@@ -47,7 +49,12 @@ class ArtistsController extends Controller
             foreach($request->input('genders') as $name)
             {
                 $gender = GenderModel::firstOrCreate(['name' => $name]);
-                $artist->gender()->associate($gender);
+                ArtistGenderModel::firstOrCreate(
+                    [
+                        'artist_id' => $artist->id,
+                        'gender_id'=> $gender->id
+                    ]
+                );
             }
 
             if(!empty($request->input('favorite_instrument')))
@@ -67,7 +74,10 @@ class ArtistsController extends Controller
     public function show(string $id)
     {
         try {
-        
+            $artist = ArtistModel::with(['instrument', 'genders'])->find($id);
+            return empty($artist)
+                ? $this->error('Artista não encontrado', Response::HTTP_NOT_FOUND)
+                : $this->response($artist, "Artista $artist->name encontrado com sucesso");
         } catch (\Exception $e) {
             return $this->error($e->getMessage());
         }
