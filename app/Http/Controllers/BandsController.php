@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Band as BandModel;
+use App\Models\Gender as GenderModel;
+
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -30,11 +32,33 @@ class BandsController extends Controller
     {
         try 
         {
+            $validator = [
+                "name" => "required | string | min: 2",
+                "gender_id" => "required | int",
+                "description" => "string"
+            ];
+            $request->validate($validator);
 
+            if(empty(GenderModel::find($request->input("gender_id"))))
+            {
+                return $this->error("Genêro não existe", Response::HTTP_NOT_FOUND);
+            }
+
+            $bandsCollection = BandModel::where(["name" => $request->input("name")])->get();
+
+            if($bandsCollection->isNotEmpty())
+            {
+                $band = $bandsCollection->first();
+                return $this->error("Banda $band->name ja se encontra cadastrada", Response::HTTP_CONFLICT);
+            }
+
+            $band = BandModel::create($request->all());
+            return $this->response($band, $this->message($band, "banda", "cadastrada"));
         } catch (\Exception $e) 
         {
             return $this->error($e->getMessage());
-        }    }
+        }    
+    }
 
     /**
      * Display the specified resource.
@@ -64,7 +88,8 @@ class BandsController extends Controller
         } catch (\Exception $e) 
         {
             return $this->error($e->getMessage());
-        }    }
+        }
+    }
 
     /**
      * Remove the specified resource from storage.
