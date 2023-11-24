@@ -34,7 +34,7 @@ class Controller extends BaseController
         if($data instanceof Collection)
         {
             return ($data->count() === 1)
-                ? "$data->count() $model $action com sucesso"
+                ? $data->count()." ".$model." ".$action." com sucesso"
                 : $data->count()." ".$model."s ".$action."s com sucesso";
         }
 

@@ -17,7 +17,7 @@ class BandsController extends Controller
     {
         try 
         {
-            $bands = BandModel::get();
+            $bands = BandModel::with('gender')->get();
             return $this->response($bands, $this->message($bands, 'banda', 'encontrada'));
         } catch (\Exception $e) 
         {
@@ -44,7 +44,7 @@ class BandsController extends Controller
                 return $this->error("Genêro não existe", Response::HTTP_NOT_FOUND);
             }
 
-            $bandsCollection = BandModel::where(["name" => $request->input("name")])->get();
+            $bandsCollection = BandModel::where(["name" => $request->input("")])->get();
 
             if($bandsCollection->isNotEmpty())
             {
@@ -67,7 +67,7 @@ class BandsController extends Controller
     {
         try 
         {
-            $band = BandModel::find($id);
+            $band = BandModel::with('gender')->find($id);
             return empty($band) 
                 ? $this->error('Banda não encontrada', Response::HTTP_NOT_FOUND)
                 : $this->response($band, $this->message($band, 'banda', 'encontrada'));
@@ -84,11 +84,38 @@ class BandsController extends Controller
     {
         try 
         {
+            $validator = [
+                "name" => "string | min: 2",
+                "gender_id" => "int",
+                "description" => "string"
+            ];
 
+            $request->validate($validator);
+
+            if(empty(GenderModel::find($request->input("gender_id"))))
+            {
+                return $this->error("Genêro não existe", Response::HTTP_NOT_FOUND);
+            }
+
+            $band = BandModel::find($id);
+
+            if(empty($band))
+            {
+                return $this->error('Banda não encontrada', Response::HTTP_NOT_FOUND);
+            }
+
+            /** Forma Mais Trabalhosa */
+            // $band->name = $request->input("name");
+            // $band->gender_id = $request->input("gender_id");
+            // $band->description = $request->input("description");
+            // $band->save();
+
+            $band->update($request->all());
+            return $this->response($band, $this->message($band, 'banda', 'atualizada'));
         } catch (\Exception $e) 
         {
             return $this->error($e->getMessage());
-        }
+        }    
     }
 
     /**
