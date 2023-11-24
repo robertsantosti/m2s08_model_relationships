@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Band as BandModel;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class BandsController extends Controller
 {
@@ -15,7 +16,7 @@ class BandsController extends Controller
         try 
         {
             $bands = BandModel::get();
-            return $this->response($bands, $this->message($bands, '', ''));
+            return $this->response($bands, $this->message($bands, 'banda', 'encontrada'));
         } catch (\Exception $e) 
         {
             return $this->error($e->getMessage());
@@ -42,11 +43,15 @@ class BandsController extends Controller
     {
         try 
         {
-
+            $band = BandModel::find($id);
+            return empty($band) 
+                ? $this->error('Banda não encontrada', Response::HTTP_NOT_FOUND)
+                : $this->response($band, $this->message($band, 'banda', 'encontrada'));
         } catch (\Exception $e) 
         {
             return $this->error($e->getMessage());
-        }    }
+        }
+    }
 
     /**
      * Update the specified resource in storage.

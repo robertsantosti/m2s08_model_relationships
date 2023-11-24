@@ -10,8 +10,8 @@ class Band extends Model
 {
     use HasFactory;
 
-    protected array $fillable = ["name","gender_id","description"];
-    protected array $hidden = ["gender_id"];
+    protected $fillable = ["name","gender_id","description"];
+    protected $hidden = ["gender_id"];
 
     /**
      * Get the gender associated with the Band
